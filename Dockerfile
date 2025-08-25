@@ -1,2 +1,3 @@
-FROM tomcat:8.0.20-jre8
-COPY target/exec-war.war /usr/local/tomcat/webapps/exec-war.war
+FROM tomcat:9.0-jdk11
+COPY target/exec-war.war /usr/local/tomcat/webapps/
+EXPOSE 8080
