@@ -1,4 +1,4 @@
-name: CI/CD Docker Build & Deploy
+name: Deploy to GCP Cloud Run
 
 on:
   push:
@@ -8,63 +8,51 @@ on:
 env:
   GCP_PROJECT: cobalt-alcove-345208
   GCP_REGION: us-central1
-  SERVICE_NAME: webapp-service
+  SERVICE_NAME: webapp-service-dev
+  IMAGE: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/webapp-repo/webapp:${{ github.run_number }}
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      #  Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v3
+    # Step 1: Checkout the repository
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-      # Set up JDK 17 + Maven
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: '17'
-          cache: maven
+    # Step 2: Set up JDK and Maven caching
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
 
-      # Build & Test
-      - name: Build with Maven
-        run: mvn clean package
+    # Step 3: Build the application
+    - name: Build with Maven
+      run: mvn clean package
 
-      - name: Run tests
-        run: mvn test
+    # Step 4: Authenticate with GCP
+    - name: Authenticate with GCP
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      # Authenticate to Google Cloud
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+    # Step 5: Configure Docker for Artifact Registry
+    - name: Configure Docker for GCP Artifact Registry
+      run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
 
-      # Install gcloud SDK
-      - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ env.GCP_PROJECT }}
+    # Step 6: Build and push Docker image
+    - name: Build and Push Docker Image
+      run: |
+        docker build -t ${{ env.IMAGE }} .
+        docker push ${{ env.IMAGE }}
 
-      # Configure Docker for Artifact Registry
-      - name: Configure Docker
-        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
-
-      # Set IMAGE env variable (dynamic)
-      - name: Set IMAGE name
-        run: echo "IMAGE=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/webapp-repo/webapp:${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
-
-      # Build & Push Docker Image
-      - name: Build and Push Image
-        run: |
-          docker build -t $IMAGE .
-          docker push $IMAGE
-
-      # Deploy to Cloud Run
-      - name: Deploy to Cloud Run
-        run: |
-          gcloud run deploy $SERVICE_NAME \
-            --image $IMAGE \
-            --region $GCP_REGION \
-            --platform managed \
-            --allow-unauthenticated
+    # Step 7: Deploy to Cloud Run
+    - name: Deploy to Cloud Run
+      run: |
+        gcloud run deploy ${{ env.SERVICE_NAME }} \
+          --image ${{ env.IMAGE }} \
+          --platform managed \
+          --allow-unauthenticated \
+          --region ${{ env.GCP_REGION }}
