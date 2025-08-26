@@ -5,15 +5,15 @@ on:
     branches:
       - main
 
-env:
-  GCP_PROJECT: cobalt-alcove-345208
-  GCP_REGION: us-central1
-  SERVICE_NAME: webapp-service-dev
-  IMAGE: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/webapp-repo/webapp:${{ github.run_number }}
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    env:
+      GCP_PROJECT: cobalt-alcove-345208
+      GCP_REGION: us-central1
+      SERVICE_NAME: webapp-service-dev
+      IMAGE: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/webapp-repo/webapp:${{ github.run_number }}
 
     steps:
     # Step 1: Checkout the repository
@@ -45,14 +45,14 @@ jobs:
     # Step 6: Build and push Docker image
     - name: Build and Push Docker Image
       run: |
-        docker build -t ${{ env.IMAGE }} .
-        docker push ${{ env.IMAGE }}
+        docker build -t $IMAGE .
+        docker push $IMAGE
 
     # Step 7: Deploy to Cloud Run
     - name: Deploy to Cloud Run
       run: |
-        gcloud run deploy ${{ env.SERVICE_NAME }} \
-          --image ${{ env.IMAGE }} \
+        gcloud run deploy $SERVICE_NAME \
+          --image $IMAGE \
           --platform managed \
           --allow-unauthenticated \
-          --region ${{ env.GCP_REGION }}
+          --region $GCP_REGION
