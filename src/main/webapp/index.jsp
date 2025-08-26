@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Hello DEVOPS World</title>
+    <title>Hello DevOps World</title>
     <style>
         /* Modern Warm Gradient Background */
         body {
@@ -46,7 +46,7 @@
     </style>
 </head>
 <body>
-    <h2>Hello World..!!</h2>
+    <h2>Hello DevOps World..!!</h2>
     <p>Welcome to this CI/CD demo . Explore how JSP can integrate with modern HTML and CSS for dynamic and visually appealing web pages.</p>
     
     <div class="demo-box">
