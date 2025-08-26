@@ -46,8 +46,8 @@
     </style>
 </head>
 <body>
-    <h2>Hello DevOps World..!!</h2>
-    <p>Welcome to this demo CI CD. Explore how JSP can integrate with modern HTML and CSS for dynamic and visually appealing web pages.</p>
+    <h2>Hello World..!!</h2>
+    <p>Welcome to this CI/CD demo . Explore how JSP can integrate with modern HTML and CSS for dynamic and visually appealing web pages.</p>
     
     <div class="demo-box">
         <p>This is a demo box to showcase additional content with a warm modern style.</p>
